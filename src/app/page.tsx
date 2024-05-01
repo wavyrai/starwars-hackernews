@@ -95,7 +95,7 @@ export default function App() {
           Generated with Prototyper
         </a>
         <span className="mx-2">|</span>
-        <a href="https://github.com/getaprototype/starwars-hackernews" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+        <a href="https://github.com/wavyrai/starwars-hackernews" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
           Github
         </a>
       </div>
