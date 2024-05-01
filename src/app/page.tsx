@@ -1,113 +1,104 @@
-import Image from "next/image";
+'use client'
+import { useState, useEffect } from 'react';
 
-export default function Home() {
+type Item = {
+  id: number;
+  title: string;
+  points?: number | null;
+  user?: string | null;
+  time: number;
+  time_ago: string;
+  comments_count: number;
+  type: string;
+  url?: string;
+  domain?: string;
+};
+
+const getItems = (page: number): Promise<Item[]> =>
+  fetch(`https://api.hnpwa.com/v0/news/${page}.json`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error('There was a problem with the fetch operation:', error);
+      throw error;
+    });
+
+const Item = ({ item }: { item: Item }) => (
+  <li className="bg-black bg-opacity-80 rounded-lg p-4 border border-gray-700 shadow-lg transform transition duration-500 hover:scale-105">
+    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:text-blue-300">
+      {item.title}
+    </a>
+    <div className="text-gray-400 text-sm mt-2">
+      <span>{item.points} points</span>
+      <span className="mx-2">|</span>
+      <span>
+        by {item.user} {item.time_ago}
+      </span>
+      <span className="mx-2">|</span>
+      <span>{item.comments_count} comments</span>
+    </div>
+  </li>
+);
+
+const List = ({ page }: { page: number }) => {
+  const [items, setItems] = useState<Item[] | null>(null);
+
+  useEffect(() => {
+    getItems(page).then(setItems);
+  }, [page]);
+
+  if (!items) return <span className="text-gray-400 text-sm">loading...</span>;
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <ul className="list-none m-0 p-0 grid gap-4">
+      {items.map((item) => (
+        <Item key={item.id} item={item} />
+      ))}
+    </ul>
+  );
+};
+
+export default function App() {
+  const [page, setPage] = useState(1);
+
+  return (
+
+    <div className="p-4 m-auto text-white" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)', backgroundSize: 'cover', minHeight: '100vh' }}>
+      <header className="h-12 max-w-xl m-auto bg-black bg-opacity-70 flex items-center justify-between backdrop-blur-md px-4 rounded-lg">
+        <h2>Galactic News</h2>
+        <div>
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="bg-none border-none text-gray-300 hover:text-gray-200"
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            prev
+          </button>
+          <span className="text-gray-300 text-sm"> {page} / 10 </span>
+          <button
+            disabled={page >= 10}
+            onClick={() => setPage(page + 1)}
+            className="bg-none border-none text-gray-300 hover:text-gray-200"
+          >
+            next
+          </button>
         </div>
+      </header>
+      <div className="p-4 max-w-xl m-auto text-white">
+        <List page={page} />
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
+      <div className="fixed bottom-4 right-4 bg-black bg-opacity-60 text-xs text-gray-300 p-2 rounded">
+        <a href="https://getaprototype.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+          Generated with Prototyper
         </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
+        <span className="mx-2">|</span>
+        <a href="https://github.com/getaprototype/starwars-hackernews" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+          Github
         </a>
       </div>
-    </main>
+    </div>
   );
 }
